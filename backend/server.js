@@ -47,6 +47,7 @@ app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/sheets', require('./routes/sheetsRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 
+console.log("JWT_SECRET =", process.env.JWT_SECRET);
 // ── Health check ─────────────────────────────────────────────────
 app.get('/api/health', (_, res) => res.json({ ok: true, time: new Date() }))
 app.get("/", (req, res) => {

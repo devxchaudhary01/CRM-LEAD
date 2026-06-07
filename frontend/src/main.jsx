@@ -1,5 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import axios from 'axios'
 import './index.css'
-ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)
+
+axios.defaults.baseURL = "https://crm-lead-q8g4.onrender.com";
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)

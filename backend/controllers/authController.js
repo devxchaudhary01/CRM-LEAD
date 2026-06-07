@@ -3,6 +3,8 @@ const Organization = require('../models/Organization');
 const Activity     = require('../models/Activity');
 const jwt          = require('jsonwebtoken');
 
+
+
 const genToken = id => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 const safeUser = u  => ({
   id: u._id, name: u.name, email: u.email, phone: u.phone,
