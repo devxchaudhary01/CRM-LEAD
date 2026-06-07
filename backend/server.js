@@ -1,173 +1,63 @@
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const fs = require('fs')
-const session = require('express-session')
+const express        = require('express');
+const cors           = require('cors');
+const dotenv         = require('dotenv');
+dotenv.config();
+const fs             = require('fs');
+const session        = require('express-session');
+const passport       = require('./config/passport');
+const connectDB      = require('./config/db');
 
-dotenv.config()
+connectDB();
 
-const passport = require('./config/passport')
-const connectDB = require('./config/db')
+const app = express();
+if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
-connectDB()
-
-const app = express()
-
-/* ─────────────────────────────────────────────── */
-/* TRUST PROXY (IMPORTANT FOR RENDER) */
-/* ─────────────────────────────────────────────── */
-
-app.set('trust proxy', 1)
-
-/* ─────────────────────────────────────────────── */
-/* CREATE UPLOADS FOLDER */
-/* ─────────────────────────────────────────────── */
-
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads')
-}
-
-/* ─────────────────────────────────────────────── */
-/* CORS */
-/* ─────────────────────────────────────────────── */
-
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://crm-nu-lac-54.vercel.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean)
-
+// ── CORS ──────────────────────────────────────────────────────────
 app.use(cors({
-  origin: function (origin, callback) {
-
-    // Allow requests without origin (mobile apps/postman)
-    if (!origin) return callback(null, true)
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true)
-    }
-
-    return callback(new Error('CORS Not Allowed'))
-  },
-
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
   credentials: true,
-}))
+}));
 
-/* ─────────────────────────────────────────────── */
-/* BODY PARSERS */
-/* ─────────────────────────────────────────────── */
-
-// Webhook raw body
-app.use(
-  '/api/payment/webhook',
-  express.raw({ type: 'application/json' })
-)
-
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({
-  extended: true,
-  limit: '10mb',
-}))
-
-/* ─────────────────────────────────────────────── */
-/* SESSION */
-/* ─────────────────────────────────────────────── */
-
+// ── Session (required for passport Google OAuth callback) ─────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'crm_secret',
-
-  resave: false,
-
+  secret:            process.env.SESSION_SECRET || 'crm_session_secret',
+  resave:            false,
   saveUninitialized: false,
+  cookie:            { secure: false, maxAge: 10 * 60 * 1000 }, // 10 min — only for OAuth flow
+}));
 
-  proxy: true,
+// ── Passport ──────────────────────────────────────────────────────
+app.use(passport.initialize());
+app.use(passport.session());
 
-  cookie: {
+// ── Body parsers ──────────────────────────────────────────────────
+// NOTE: webhook route uses raw body — must be registered BEFORE express.json()
+app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    httpOnly: true,
+// ── Routes ────────────────────────────────────────────────────────
+app.use('/api/auth',           require('./routes/authRoutes'));
+app.use('/api/auth/google',    require('./routes/googleAuthRoutes'));
+app.use('/api/leads',          require('./routes/leadRoutes'));
+app.use('/api/sheets',         require('./routes/sheetsRoutes'));
+app.use('/api/payment',        require('./routes/paymentRoutes'));
 
-    secure: process.env.NODE_ENV === 'production',
+// ── Health check ─────────────────────────────────────────────────
+app.get('/api/health', (_, res) => res.json({ ok:true, time:new Date() }));
 
-    sameSite:
-      process.env.NODE_ENV === 'production'
-        ? 'none'
-        : 'lax',
-
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-  },
-}))
-
-/* ─────────────────────────────────────────────── */
-/* PASSPORT */
-/* ─────────────────────────────────────────────── */
-
-app.use(passport.initialize())
-app.use(passport.session())
-
-/* ─────────────────────────────────────────────── */
-/* ROUTES */
-/* ─────────────────────────────────────────────── */
-
-app.use('/api/auth', require('./routes/authRoutes'))
-
-app.use(
-  '/api/auth/google',
-  require('./routes/googleAuthRoutes')
-)
-
-app.use('/api/leads', require('./routes/leadRoutes'))
-
-app.use('/api/sheets', require('./routes/sheetsRoutes'))
-
-app.use('/api/payment', require('./routes/paymentRoutes'))
-
-/* ─────────────────────────────────────────────── */
-/* HEALTH */
-/* ─────────────────────────────────────────────── */
-
-app.get('/api/health', (req, res) => {
-
-  res.json({
-    success: true,
-    message: 'CRM Backend Running',
-    time: new Date(),
-  })
-})
-
-/* ─────────────────────────────────────────────── */
-/* ROOT */
-/* ─────────────────────────────────────────────── */
-
-app.get('/', (req, res) => {
-  res.send('CRM Backend API Running...')
-})
-
-/* ─────────────────────────────────────────────── */
-/* GLOBAL ERROR HANDLER */
-/* ─────────────────────────────────────────────── */
-
+// ── Global error handler ─────────────────────────────────────────
 app.use((err, req, res, next) => {
+  console.error('❌', err.message);
+  res.status(500).json({ success:false, message: err.message });
+});
 
-  console.error('❌ ERROR:', err)
-
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Server Error',
-  })
-})
-
-/* ─────────────────────────────────────────────── */
-/* START SERVER */
-/* ─────────────────────────────────────────────── */
-
-const PORT = process.env.PORT || 5000
-
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-
-  console.log(`
-🚀 CRM API RUNNING
-🌍 PORT: ${PORT}
-🔗 URL: http://localhost:${PORT}
-`)
-})
+  console.log(`🚀 CRM API  →  http://localhost:${PORT}`);
+  console.log(`🔑 Google OAuth  →  http://localhost:${PORT}/api/auth/google`);
+});
