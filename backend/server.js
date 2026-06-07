@@ -1,11 +1,11 @@
-const express        = require('express');
-const cors           = require('cors');
-const dotenv         = require('dotenv');
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
 dotenv.config();
-const fs             = require('fs');
-const session        = require('express-session');
-const passport       = require('./config/passport');
-const connectDB      = require('./config/db');
+const fs = require('fs');
+const session = require('express-session');
+const passport = require('./config/passport');
+const connectDB = require('./config/db');
 
 connectDB();
 
@@ -24,10 +24,10 @@ app.use(cors({
 
 // ── Session (required for passport Google OAuth callback) ─────────
 app.use(session({
-  secret:            process.env.SESSION_SECRET || 'crm_session_secret',
-  resave:            false,
+  secret: process.env.SESSION_SECRET || 'crm_session_secret',
+  resave: false,
   saveUninitialized: false,
-  cookie:            { secure: false, maxAge: 10 * 60 * 1000 }, // 10 min — only for OAuth flow
+  cookie: { secure: false, maxAge: 10 * 60 * 1000 }, // 10 min — only for OAuth flow
 }));
 
 // ── Passport ──────────────────────────────────────────────────────
@@ -41,19 +41,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Routes ────────────────────────────────────────────────────────
-app.use('/api/auth',           require('./routes/authRoutes'));
-app.use('/api/auth/google',    require('./routes/googleAuthRoutes'));
-app.use('/api/leads',          require('./routes/leadRoutes'));
-app.use('/api/sheets',         require('./routes/sheetsRoutes'));
-app.use('/api/payment',        require('./routes/paymentRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/auth/google', require('./routes/googleAuthRoutes'));
+app.use('/api/leads', require('./routes/leadRoutes'));
+app.use('/api/sheets', require('./routes/sheetsRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // ── Health check ─────────────────────────────────────────────────
-app.get('/api/health', (_, res) => res.json({ ok:true, time:new Date() }));
+app.get('/api/health', (_, res) => res.json({ ok: true, time: new Date() }))
+app.get("/", (req, res) => {
+  res.send("hii i am home page")
+})
 
 // ── Global error handler ─────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('❌', err.message);
-  res.status(500).json({ success:false, message: err.message });
+  res.status(500).json({ success: false, message: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
