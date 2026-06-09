@@ -124,9 +124,7 @@ export default function LoginPage() {
             <button className="btn btn-primary" style={{width:'100%',padding:'11px'}} disabled={!otpSent}>
               Verify & Sign In
             </button>
-            <div className="auth-info" style={{marginTop:10}}>
-              <strong>Coming in Phase 2</strong> — SMS OTP via Twilio/MSG91
-            </div>
+           
           </div>
         )}
 
