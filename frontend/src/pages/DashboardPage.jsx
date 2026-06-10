@@ -54,7 +54,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div>
         <h2 style={{ fontFamily:'Outfit,sans-serif', fontSize:21, fontWeight:800, letterSpacing:'-.3px' }}>
-          Good {new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, {user?.name?.split(' ')[0]} 👋
+          Good {new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, {user?.organization?.name || ''.split(' ')[0]} 👋
         </h2>
         <p style={{ color:'var(--muted)', fontSize:13, marginTop:2 }}>Here's your leads overview.</p>
       </div>
