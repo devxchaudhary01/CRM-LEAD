@@ -594,9 +594,29 @@ export default function LeadsPage() {
                   </td>
 
                   {/* LOCKED — contact (red if duplicate) */}
-                  <td className="mono fs11" style={{ color: isDup ? '#EF4444' : 'inherit', fontWeight: isDup ? 700 : 400 }}>
-                    {maskPhone(l.contactNo)}
-                    {isDup && <div style={{ fontSize: 9, color: '#EF4444', fontWeight: 700 }}>DUPLICATE</div>}
+                  <td
+                    className="mono fs11"
+                    style={{
+                      color: isDup ? '#EF4444' : 'inherit',
+                      fontWeight: isDup ? 700 : 400
+                    }}
+                  >
+                    {isEditing
+                      ? (l.contactNo || '—')
+                      : maskPhone(l.contactNo)
+                    }
+
+                    {isDup && (
+                      <div
+                        style={{
+                          fontSize: 9,
+                          color: '#EF4444',
+                          fontWeight: 700
+                        }}
+                      >
+                        DUPLICATE
+                      </div>
+                    )}
                   </td>
 
                   {/* Product — editable */}
