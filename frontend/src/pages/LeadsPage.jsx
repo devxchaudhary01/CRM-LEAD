@@ -587,7 +587,10 @@ export default function LeadsPage() {
                     className="fs11"
                     style={{ color: isDup ? '#991B1B' : 'var(--muted)' }}
                   >
-                    {maskEmail(l.emailId)}
+                    {isEditing
+                      ? (l.emailId || '—')
+                      : maskEmail(l.emailId)
+                    }
                   </td>
 
                   {/* LOCKED — contact (red if duplicate) */}
