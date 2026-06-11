@@ -190,6 +190,67 @@ function AddColumnModal({ onClose, onSaved }) {
   )
 }
 
+/* ─── Delete Column Modal ───────────────────────────────── */
+function DeleteColumnModal({ columns, onClose, onDeleted }) {
+  const [deleting, setDeleting] = useState(null)
+
+  const deleteCol = async (key, label) => {
+    if (!confirm(`Delete column "${label}"? All data in this column will be lost.`)) return
+    setDeleting(key)
+    try {
+      await axios.delete(`/api/leads/org-columns/${key}`)
+      toast.success(`Column "${label}" deleted`)
+      onDeleted()
+      onClose()
+    } catch (e) { toast.error(e.response?.data?.message || 'Failed') }
+    finally { setDeleting(null) }
+  }
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+        <div className="modal-head">
+          <div>
+            <div className="modal-title">Delete Column</div>
+            <div className="modal-sub">Remove a custom column from your organization</div>
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div>
+          {columns.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '30px 20px', color: 'var(--muted)', fontSize: 13 }}>
+              No custom columns to delete.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {columns.map(col => (
+                <div key={col.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 9, border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{col.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>Type: {col.type} {col.options?.length ? `· ${col.options.length} options` : ''}</div>
+                  </div>
+                  <button className="btn btn-danger btn-xs" onClick={() => deleteCol(col.key, col.label)} disabled={deleting === col.key} title="Delete column">
+                    {deleting === col.key ? '…' : <RiDeleteBinLine />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: '10px 12px', background: '#FEE2E2', borderRadius: 8, fontSize: 12, color: '#991B1B', marginTop: 14 }}>
+          ⚠️ Deleted columns cannot be recovered. All data in the column will be lost permanently.
+        </div>
+
+        <div className="modal-foot">
+          <button className="btn btn-ghost" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Manage Columns Modal ───────────────────────────────── */
 function ManageColumnsModal({ columns, onClose, onRefresh }) {
   const [deleting, setDeleting] = useState(null)
@@ -350,6 +411,7 @@ export default function LeadsPage() {
   const [showUpload, setShowUpload] = useState(false)
   const [showSheets, setShowSheets] = useState(false)
   const [showAddCol, setShowAddCol] = useState(false)
+  const [showDelCol, setShowDelCol] = useState(false)
   const [showManCols, setShowManCols] = useState(false)
   const [followUpLead, setFollowUpLead] = useState(null)
 
@@ -488,6 +550,9 @@ export default function LeadsPage() {
           <>
             <button className="btn btn-outline btn-sm" onClick={() => setShowAddCol(true)}>
               <RiAddLine /> Add Column
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowDelCol(true)}>
+              <RiDeleteBinLine /> Delete Column
             </button>
             <button className="btn-icon" onClick={() => setShowManCols(true)} title="Manage columns">
               <RiSettings3Line />
@@ -766,6 +831,7 @@ export default function LeadsPage() {
       {showSheets && <GoogleSheetsModal onClose={() => setShowSheets(false)} onImported={fetchLeads} />}
 
       {showAddCol && <AddColumnModal onClose={() => setShowAddCol(false)} onSaved={() => { loadCustomCols(); fetchLeads() }} />}
+      {showDelCol && <DeleteColumnModal columns={customCols} onClose={() => setShowDelCol(false)} onDeleted={() => { loadCustomCols(); fetchLeads() }} />}
       {showManCols && <ManageColumnsModal columns={customCols} onClose={() => setShowManCols(false)} onRefresh={() => { loadCustomCols(); fetchLeads() }} />}
       {followUpLead && <FollowUpModal lead={followUpLead} onClose={() => setFollowUpLead(null)} onSaved={fetchLeads} />}
 
