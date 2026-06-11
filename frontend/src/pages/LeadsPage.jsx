@@ -628,9 +628,9 @@ export default function LeadsPage() {
 
                   {/* Service — editable */}
                   <td>
-                    {isEditing
-                      ? <input className="ie" style={{ width: 90 }} value={ed.service} onChange={e => setEditData(d => ({ ...d, service: e.target.value }))} placeholder="Service…" />
-                      : <span style={{ fontSize: 12 }}>{l.service || '—'}</span>}
+                    <span style={{ fontSize: 12 }}>
+                      {l.service || '—'}
+                    </span>
                   </td>
 
                   {/* Custom columns — editable */}
