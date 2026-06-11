@@ -581,6 +581,14 @@ select {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   flex: 1;
+
+  table,
+  td,
+  th {
+    user-select: none;
+  }
+
+  ;
 }
 
 table {
@@ -868,6 +876,26 @@ tbody tr:hover td {
 
 .auth-info strong {
   color: var(--text-2);
+}
+
+
+/* ════PREVENT SCREENSHOT  ════ */
+
+.crm-watermark {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 48px;
+  font-weight: 700;
+
+  opacity: 0.05;
+  transform: rotate(-30deg);
+
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* ════ UPLOAD ZONE ════ */
