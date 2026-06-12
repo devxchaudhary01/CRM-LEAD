@@ -8,6 +8,7 @@ import RegisterPage     from './pages/RegisterPage'
 import GoogleSuccessPage from './pages/GoogleSuccessPage'
 import DashboardPage    from './pages/DashboardPage'
 import LeadsPage        from './pages/LeadsPage'
+import PlannerPage      from './pages/PlannerPage'
 import UsersPage        from './pages/UsersPage'
 import ReportsPage      from './pages/ReportsPage'
 import PricingPage      from './pages/PricingPage'
@@ -43,6 +44,7 @@ function AppRoutes() {
       {/* Protected */}
       <Route path="/dashboard" element={<Guard requireDash><Layout title="Dashboard"><DashboardPage/></Layout></Guard>}/>
       <Route path="/leads"     element={<Guard><Layout title="Leads & Data"><LeadsPage/></Layout></Guard>}/>
+      <Route path="/planner"   element={<Guard><Layout title="Follow-up Planner"><PlannerPage/></Layout></Guard>}/>
       <Route path="/reports"   element={<Guard requireReports><Layout title="Reports"><ReportsPage/></Layout></Guard>}/>
       <Route path="/users"     element={<Guard requireManage><Layout title="Team Management"><UsersPage/></Layout></Guard>}/>
       <Route path="/pricing"   element={<Guard requireOwner><PricingPage/></Guard>}/>

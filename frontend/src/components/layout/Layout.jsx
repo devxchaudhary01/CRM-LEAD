@@ -2,7 +2,7 @@ import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
-import { RiDashboardLine, RiTeamLine, RiBarChart2Line, RiUserSettingsLine, RiLogoutBoxLine, RiVipCrownLine } from 'react-icons/ri'
+import { RiDashboardLine, RiTeamLine, RiBarChart2Line, RiUserSettingsLine, RiLogoutBoxLine, RiVipCrownLine, RiCalendarLine } from 'react-icons/ri'
 
 const ROLE_LABEL = {
   super_admin:'Super Admin', org_owner:'Business Owner',
@@ -44,6 +44,9 @@ export default function Layout({ children, title }) {
             )}
             <NavLink to="/leads" className={({isActive})=>`nav-item${isActive?' active':''}`}>
               <RiTeamLine/> Leads & Data
+            </NavLink>
+            <NavLink to="/planner" className={({isActive})=>`nav-item${isActive?' active':''}`}>
+              <RiCalendarLine/> Planner
             </NavLink>
           </div>
 

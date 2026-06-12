@@ -10,6 +10,7 @@ import {
 } from 'react-icons/ri'
 import GoogleSheetsModal from '../components/leads/GoogleSheetsModal'
 
+
 /* ─── Constants ──────────────────────────────────────────── */
 const STATUS_BADGE = { pending: 'b-gray', in_progress: 'b-blue', converted: 'b-green', not_converted: 'b-red' }
 const STATUS_LABEL = { pending: 'Pending', in_progress: 'In Progress', converted: 'Converted', not_converted: 'Not Converted' }
@@ -393,6 +394,7 @@ function FollowUpModal({ lead, onClose, onSaved }) {
 
 /* ─── Main LeadsPage ─────────────────────────────────────── */
 export default function LeadsPage() {
+  
   const { canUpload, canDownload, canSetFollowUp, canManage, isAgent, user } = useAuth()
   const [leads, setLeads] = useState([])
   const [total, setTotal] = useState(0)
@@ -528,7 +530,7 @@ export default function LeadsPage() {
   return (
     <>
 
-    //prevent screenshot
+    
 
       <div className="crm-watermark">
         {user?.name} | {user?.email}
@@ -871,6 +873,7 @@ export default function LeadsPage() {
 
 /* ─── Add Lead Modal (with custom cols) ─────────────────── */
 function AddLeadModal({ onClose, onSaved, customCols }) {
+  
   const [f, setF] = useState({ name: '', address: '', emailId: '', contactNo: '', product: '', service: '', customData: {} })
   const [loading, setLoading] = useState(false)
   const set = k => e => setF(p => ({ ...p, [k]: e.target.value }))
