@@ -90,9 +90,10 @@ export default function Layout({ children, title }) {
             <div className="avatar">{user?.name?.[0]?.toUpperCase()}</div>
             <div className="sb-user-info">
               <div className="sb-user-name">{user?.name}</div>
+              <div className="sb-user-email">{user?.email}</div>
               <div className="sb-user-role">{ROLE_LABEL[role]}</div>
             </div>
-            <button className="sb-logout" onClick={doLogout} title="Sign out"><RiLogoutBoxLine size={15}/></button>
+            <button className="sb-logout" onClick={doLogout} title="Sign out"><RiLogoutBoxLine size={18}/></button>
           </div>
         </div>
       </aside>
