@@ -57,8 +57,8 @@ function CallPanel({ label, call, onChange, canEdit, isOptional, enabled, showEn
               {OUTCOMES.find(o => o.k === call.outcome)?.lbl}
             </span>
             : <span className="muted fs11">—</span>}
-          {call?.date && <div className="fs11 muted">{new Date(call.date).toLocaleDateString()}</div>}
-          {call?.doneBy?.name && <div className="fs11 muted">by {call.doneBy.name}</div>}
+          {call?.notes && <div style={{ marginTop: 4 }}>{call.notes}</div>}
+          {call?.doneBy?.name && <div className="fs11 muted" style={{ marginTop: 4 }}>by {call.doneBy.name}</div>}
         </div>
       )}
     </div>
