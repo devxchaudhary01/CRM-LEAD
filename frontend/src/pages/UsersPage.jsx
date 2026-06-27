@@ -131,35 +131,8 @@ export default function UsersPage() {
         </div>
 
         {/* Right panel */}
-        <div style={{ width:220, flexShrink:0, display:'flex', flexDirection:'column', gap:12 }}>
-          {/* Subscription plan — org_owner only */}
-          {isOrgOwner && org && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:12 }}><RiVipCrownLine style={{ marginRight:6 }}/>Subscription</div>
-              {['free','basic','pro'].map(p => (
-                <div key={p} onClick={() => changePlan(p)} style={{
-                  display:'flex', alignItems:'center', justifyContent:'space-between',
-                  padding:'9px 12px', borderRadius:8, marginBottom:6, cursor:'pointer',
-                  border:`2px solid ${org.plan===p ? PLAN_COLOR[p] : 'var(--border)'}`,
-                  background: org.plan===p ? (p==='pro'?'#FEF3C7':p==='basic'?'#EBF0FF':'#F1F5F9') : 'var(--surface)',
-                  transition:'all .15s',
-                }}>
-                  <div>
-                    <div style={{ fontSize:13, fontWeight:700, color:PLAN_COLOR[p], textTransform:'uppercase' }}>{p}</div>
-                    <div style={{ fontSize:10, color:'var(--muted)' }}>
-                      {p==='free'?'100 leads':p==='basic'?'5,000 leads':'Unlimited'}
-                    </div>
-                  </div>
-                  {org.plan===p && <span style={{ color:PLAN_COLOR[p], fontWeight:800 }}>✓</span>}
-                </div>
-              ))}
-              <div style={{ fontSize:11, color:'var(--muted)', marginTop:6, lineHeight:1.5 }}>
-                <strong>Free:</strong> Basic lead mgmt<br/>
-                <strong>Basic:</strong> + Data analysis<br/>
-                <strong>Pro:</strong> All features incl. PPT export
-              </div>
-            </div>
-          )}
+        <div style={{ width:180, flexShrink:0, display:'flex', flexDirection:'column', gap:12 }}>
+          
 
           {/* Role permissions */}
           <div className="card scroll-y" style={{ flex:1 }}>
