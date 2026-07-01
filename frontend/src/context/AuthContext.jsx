@@ -30,6 +30,10 @@ export function AuthProvider({ children }) {
 
   const login    = async (e,p) => { const {data}=await axios.post('/api/auth/login',{email:e,password:p}); _setAuth(data.token,data.user); return data.user }
   const register = async (payload) => { const {data}=await axios.post('/api/auth/register',payload); if(data.token) _setAuth(data.token,data.user); return data }
+  const resetPassword = async ({ email, oldPassword, newPassword, confirmPassword }) => {
+    const { data } = await axios.post('/api/auth/reset-password', { email, oldPassword, newPassword, confirmPassword })
+    return data
+  }
   const logout   = () => { localStorage.removeItem('crm2_token'); delete axios.defaults.headers.common['Authorization']; setToken(null); setUser(null) }
 
   // Called by GoogleSuccessPage after reading token from URL
@@ -58,7 +62,7 @@ export function AuthProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      user, token, loading, login, register, logout, setTokenManually,
+      user, token, loading, login, register, resetPassword, logout, setTokenManually,
       isSuperAdmin, isOrgOwner, isOpsManager, isOpsLead, isAgent,
       canDownload, canUpload, canManage, canAssignRoles,
       canViewDash, canViewReports, canShare, canSetFollowUp,

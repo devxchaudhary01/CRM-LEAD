@@ -421,11 +421,11 @@ export default function LeadsPage() {
   const fileRef = useRef()
 
   const role = user?.role || ''
-  const canEditC1 = ['c1', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canEditC2 = ['c2', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canEditC3 = ['c3', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
+  const canEditC1Role = ['c1', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
+  const canEditC2Role = ['c2', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
+  const canEditC3Role = ['c3', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
   const canEnableOpt = ['ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canWork = canEditC1 || canEditC2 || canEditC3
+  const canWork = canEditC1Role || canEditC2Role || canEditC3Role
 
 
   // Mask phone
@@ -473,13 +473,22 @@ export default function LeadsPage() {
   useEffect(() => { fetchLeads(); loadCustomCols() }, [page, statusF])
   useEffect(() => { const t = setTimeout(fetchLeads, 400); return () => clearTimeout(t) }, [search])
 
+  const getTodayDate = () => {
+    const d = new Date()
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+  }
+
   /* Edit */
   const startEdit = l => {
+    const today = getTodayDate()
     setEditId(l._id)
     setEditData({
-      c1: { outcome: l.c1?.outcome || '', date: l.c1?.date ? String(l.c1.date).substring(0, 10) : '', notes: l.c1?.notes || '' },
-      c2: { outcome: l.c2?.outcome || '', date: l.c2?.date ? String(l.c2.date).substring(0, 10) : '', notes: l.c2?.notes || '' },
-      c3: { outcome: l.c3?.outcome || '', date: l.c3?.date ? String(l.c3.date).substring(0, 10) : '', notes: l.c3?.notes || '' },
+      c1: { outcome: l.c1?.outcome || '', date: l.c1?.date ? String(l.c1.date).substring(0, 10) : today, notes: l.c1?.notes || '' },
+      c2: { outcome: l.c2?.outcome || '', date: l.c2?.date ? String(l.c2.date).substring(0, 10) : today, notes: l.c2?.notes || '' },
+      c3: { outcome: l.c3?.outcome || '', date: l.c3?.date ? String(l.c3.date).substring(0, 10) : today, notes: l.c3?.notes || '' },
       c2Enabled: l.c2Enabled,
       c3Enabled: l.c3Enabled,
       product: l.product || '',
@@ -632,6 +641,12 @@ export default function LeadsPage() {
               const isEditing = editId === l._id
               const ed = editData
               const isDup = l.isDuplicate
+              const hasC1Outcome = Boolean(l.c1?.outcome)
+              const hasC2Outcome = Boolean(l.c2?.outcome)
+              const hasC3Outcome = Boolean(l.c3?.outcome)
+              const canEditC1 = isEditing && canEditC1Role && !hasC1Outcome
+              const canEditC2 = isEditing && canEditC2Role && hasC1Outcome && !hasC2Outcome
+              const canEditC3 = isEditing && canEditC3Role && hasC2Outcome && !hasC3Outcome
 
               return (
                 <tr key={l._id} style={{
@@ -725,14 +740,14 @@ export default function LeadsPage() {
 
                   {/* C1 call */}
                   <td>
-                    {isEditing && canEditC1
+                    {canEditC1
                       ? <CallPanel label="C1" call={ed.c1} onChange={v => setEditData(d => ({ ...d, c1: v }))} canEdit />
                       : <CallPanel label="C1" call={l.c1} canEdit={false} />}
                   </td>
 
                   {/* C2 — optional */}
                   <td>
-                    {isEditing && canEditC2
+                    {canEditC2
                       ? <CallPanel label="C2" call={ed.c2} onChange={v => setEditData(d => ({ ...d, c2: v }))} canEdit
                         isOptional enabled={ed.c2Enabled}
                         showEnable={!ed.c2Enabled && canEnableOpt}
@@ -745,7 +760,7 @@ export default function LeadsPage() {
 
                   {/* C3 — optional */}
                   <td>
-                    {isEditing && canEditC3
+                    {canEditC3
                       ? <CallPanel label="C3" call={ed.c3} onChange={v => setEditData(d => ({ ...d, c3: v }))} canEdit
                         isOptional enabled={ed.c3Enabled}
                         showEnable={!ed.c3Enabled && canEnableOpt}

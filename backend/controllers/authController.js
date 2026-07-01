@@ -72,6 +72,35 @@ exports.login = async (req, res) => {
   } catch(e) { res.status(500).json({ success:false, message:e.message }); }
 };
 
+// POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword, confirmPassword } = req.body;
+    if (!email || !oldPassword || !newPassword || !confirmPassword)
+      return res.status(400).json({ success:false, message:'Email, old password, new password and confirm password are required' });
+    if (newPassword.length < 6)
+      return res.status(400).json({ success:false, message:'Password must be at least 6 characters' });
+    if (newPassword !== confirmPassword)
+      return res.status(400).json({ success:false, message:'Passwords do not match' });
+    if (oldPassword === newPassword)
+      return res.status(400).json({ success:false, message:'New password must be different from old password' });
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
+    if (!user) return res.status(404).json({ success:false, message:'No account found with that email' });
+    if (!user.password)
+      return res.status(400).json({ success:false, message:'This account does not use password login' });
+    if (!(await user.matchPassword(oldPassword)))
+      return res.status(401).json({ success:false, message:'Old password is incorrect' });
+
+    user.password = newPassword;
+    await user.save();
+    res.json({ success:true, message:'Password updated successfully' });
+  } catch(e) {
+    res.status(500).json({ success:false, message:e.message });
+  }
+};
+
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
   const user = await User.findById(req.user._id).populate('organization');

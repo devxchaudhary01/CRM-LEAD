@@ -2,19 +2,23 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { RiGoogleLine, RiArrowRightLine } from 'react-icons/ri'
+import { RiGoogleLine, RiArrowRightLine, RiArrowLeftLine } from 'react-icons/ri'
 
 export default function LoginPage() {
-  const { login }   = useAuth()
+  const { login, resetPassword } = useAuth()
   const nav         = useNavigate()
   const [params]    = useSearchParams()
   const [f, setF]   = useState({ email:'', password:'' })
+  const [resetForm, setResetForm] = useState({ email:'', oldPassword:'', newPassword:'', confirmPassword:'' })
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [tab, setTab]         = useState('email')
+  const [mode, setMode]       = useState('login')
   const [phone, setPhone]     = useState('')
   const [otp, setOtp]         = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const set = k => e => setF(p=>({...p,[k]:e.target.value}))
+  const setReset = k => e => setResetForm(p=>({...p,[k]:e.target.value}))
 
   // Show error from Google OAuth failure
   const googleError = params.get('error')
@@ -27,6 +31,39 @@ export default function LoginPage() {
       nav(['c1','c2','c3'].includes(u.role) ? '/leads' : '/dashboard')
     } catch(err) { toast.error(err.response?.data?.message || 'Invalid credentials') }
     finally { setLoading(false) }
+  }
+
+  const submitReset = async e => {
+    e.preventDefault()
+    const email = resetForm.email.trim()
+    if (!email) return toast.error('Enter your email address')
+    if (!resetForm.oldPassword) return toast.error('Enter your old password')
+    if (resetForm.newPassword.length < 6) return toast.error('Password must be at least 6 characters')
+    if (resetForm.newPassword !== resetForm.confirmPassword) return toast.error('Passwords do not match')
+    if (resetForm.oldPassword === resetForm.newPassword) return toast.error('New password must be different from old password')
+
+    setResetLoading(true)
+    try {
+      await resetPassword({
+        email,
+        oldPassword:resetForm.oldPassword,
+        newPassword:resetForm.newPassword,
+        confirmPassword:resetForm.confirmPassword,
+      })
+      toast.success('Password updated. Sign in with your new password.')
+      setF(p => ({ ...p, email, password:'' }))
+      setResetForm({ email:'', oldPassword:'', newPassword:'', confirmPassword:'' })
+      setMode('login')
+      setTab('email')
+    } catch(err) {
+      const message = err.response?.data?.message
+        || (err.response?.status === 404
+          ? 'Password reset API was not found. Start or redeploy the backend with the latest code.'
+          : err.message || 'Unable to reset password')
+      toast.error(message)
+    } finally {
+      setResetLoading(false)
+    }
   }
 
   // Google login — redirects to backend which redirects to Google
@@ -49,7 +86,7 @@ export default function LoginPage() {
           <div><h1 style={{fontSize:20,fontWeight:900}}>CRM Pro</h1><span style={{fontSize:11,color:'var(--muted)'}}>v3.0 — Management System</span></div>
         </div>
         <h2>Sign in</h2>
-        <p className="sub">Access your organization dashboard</p>
+        <p className="sub">{mode==='reset' ? 'Verify your old password and create a new one' : 'Access your organization dashboard'}</p>
 
         {/* Google error message */}
         {googleError && (
@@ -58,6 +95,38 @@ export default function LoginPage() {
           </div>
         )}
 
+        {mode==='reset' ? (
+          <form onSubmit={submitReset}>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={()=>setMode('login')}
+              style={{ marginBottom:14, paddingLeft:0 }}
+            >
+              <RiArrowLeftLine/> Back to sign in
+            </button>
+            <div className="form-group">
+              <label>Email</label>
+              <input type="email" placeholder="you@org.com" value={resetForm.email} onChange={setReset('email')} required/>
+            </div>
+            <div className="form-group">
+              <label>Old Password</label>
+              <input type="password" placeholder="Current password" value={resetForm.oldPassword} onChange={setReset('oldPassword')} required/>
+            </div>
+            <div className="form-group">
+              <label>New Password</label>
+              <input type="password" placeholder="Min 6 characters" value={resetForm.newPassword} onChange={setReset('newPassword')} required/>
+            </div>
+            <div className="form-group">
+              <label>Confirm Password</label>
+              <input type="password" placeholder="Re-enter new password" value={resetForm.confirmPassword} onChange={setReset('confirmPassword')} required/>
+            </div>
+            <button className="btn btn-primary" style={{width:'100%',padding:'11px',marginTop:4}} disabled={resetLoading}>
+              {resetLoading?'Updating password...':<>Update Password <RiArrowRightLine/></>}
+            </button>
+          </form>
+        ) : (
+          <>
         {/* Google button */}
         <button onClick={googleLogin} style={{
           width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:10,
@@ -97,6 +166,15 @@ export default function LoginPage() {
           <form onSubmit={submitEmail}>
             <div className="form-group"><label>Email</label><input type="email" placeholder="you@org.com" value={f.email} onChange={set('email')} required/></div>
             <div className="form-group"><label>Password</label><input type="password" placeholder="••••••••" value={f.password} onChange={set('password')} required/></div>
+            <div style={{ textAlign:'right', marginTop:-6, marginBottom:10 }}>
+              <button
+                type="button"
+                onClick={()=>setMode('reset')}
+                style={{ border:'none', background:'transparent', color:'var(--primary)', cursor:'pointer', fontFamily:'Outfit,sans-serif', fontSize:12, fontWeight:700, padding:0 }}
+              >
+                Reset password
+              </button>
+            </div>
             <button className="btn btn-primary" style={{width:'100%',padding:'11px',marginTop:4}} disabled={loading}>
               {loading?'Signing in…':<>Sign In <RiArrowRightLine/></>}
             </button>
@@ -136,6 +214,8 @@ export default function LoginPage() {
           <strong>C1/C2/C3 agents:</strong> You'll land on Leads (no dashboard).<br/>
           <strong>Ops Lead:</strong> Dashboard view only, no downloads.
         </div>
+          </>
+        )}
       </div>
     </div>
   )

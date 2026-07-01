@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   phone:        { type: String, default: '' },
   role: {
     type: String,
-    enum: ['super_admin','org_owner','ops_manager','ops_lead','c1','c2','c3'],
+    enum: ['super_admin','org_owner','ops_manager','ops_lead','c1','c2','c3','user'],
     default: 'c1'
   },
   organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', default: null },

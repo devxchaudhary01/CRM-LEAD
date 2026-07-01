@@ -9,6 +9,7 @@ r.post('/register', (req,res,next) => {
   c.register(req,res);
 });
 r.post('/login',         c.login);
+r.post('/reset-password', c.resetPassword);
 r.get('/me',             protect, c.getMe);
 r.get('/users',          protect, canAssignRoles, c.getUsers);
 r.put('/users/:id',      protect, canAssignRoles, c.updateUser);
