@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
@@ -84,10 +84,6 @@ export default function ReportsPage() {
   const [daily, setDaily] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const reportRef = useRef();
-  const chartRef1 = useRef();
-  const chartRef2 = useRef();
-
   useEffect(() => {
     loadData();
   }, [period]);
@@ -115,96 +111,18 @@ export default function ReportsPage() {
   };
 
   // =========================================
-  // DOWNLOAD CHART IMAGE
-  // =========================================
-  const downloadImage = async (ref, filename) => {
-    try {
-      const { default: html2canvas } = await import("html2canvas");
-
-      const canvas = await html2canvas(ref.current, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-      });
-
-      const link = document.createElement("a");
-
-      link.download = `${filename}_${period}_${new Date()
-        .toISOString()
-        .slice(0, 10)}.png`;
-
-      link.href = canvas.toDataURL("image/png");
-
-      link.click();
-
-      toast.success("Chart downloaded!");
-    } catch (e) {
-      console.error(e);
-      toast.error("Download failed");
-    }
-  };
-
-  // =========================================
-  // DOWNLOAD FULL REPORT
-  // =========================================
-  const downloadFullReport = async () => {
-    try {
-      const { default: html2canvas } = await import("html2canvas");
-
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: "#F4F6FB",
-        scale: 2,
-      });
-
-      const link = document.createElement("a");
-
-      link.download = `crm_full_report_${period}_${new Date()
-        .toISOString()
-        .slice(0, 10)}.png`;
-
-      link.href = canvas.toDataURL("image/png");
-
-      link.click();
-
-      toast.success("Full report downloaded!");
-    } catch (e) {
-      console.error(e);
-      toast.error("Download failed");
-    }
-  };
-
-  // =========================================
   // SHARE REPORT
   // =========================================
   const shareReport = async () => {
+    if (!navigator.share) {
+      copyReportLink();
+      return;
+    }
+
     try {
-      const { default: html2canvas } = await import("html2canvas");
-
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: "#F4F6FB",
-        scale: 1.5,
-      });
-
-      canvas.toBlob(async (blob) => {
-        if (navigator.share && blob) {
-          const file = new File(
-            [blob],
-            `crm_report_${period}.png`,
-            {
-              type: "image/png",
-            }
-          );
-
-          try {
-            await navigator.share({
-              title: "CRM Report",
-              files: [file],
-            });
-          } catch {
-            copyReportLink();
-          }
-        } else {
-          copyReportLink();
-        }
+      await navigator.share({
+        title: "CRM Report",
+        url: window.location.href,
       });
     } catch {
       copyReportLink();
@@ -264,9 +182,6 @@ export default function ReportsPage() {
 
     const a = data || {};
 
-    // =========================================
-    // SLIDE 1
-    // =========================================
     const slide1 = pptx.addSlide();
 
     slide1.background = {
@@ -312,9 +227,6 @@ export default function ReportsPage() {
       }
     );
 
-    // =========================================
-    // SLIDE 2 - SUMMARY
-    // =========================================
     const slide2 = pptx.addSlide();
 
     slide2.addText("Summary Statistics", {
@@ -399,9 +311,6 @@ export default function ReportsPage() {
       });
     });
 
-    // =========================================
-    // SLIDE 3 - TREND CHART
-    // =========================================
     const slide3 = pptx.addSlide();
 
     slide3.addText("Upload Trend", {
@@ -448,9 +357,6 @@ export default function ReportsPage() {
       );
     }
 
-    // =========================================
-    // SLIDE 4 - STATUS PIE
-    // =========================================
     const slide4 = pptx.addSlide();
 
     slide4.addText("Lead Status Breakdown", {
@@ -498,9 +404,6 @@ export default function ReportsPage() {
       }
     );
 
-    // =========================================
-    // SLIDE 5 - WORKERS
-    // =========================================
     const slide5 = pptx.addSlide();
 
     slide5.addText("Worker Performance", {
@@ -574,9 +477,6 @@ export default function ReportsPage() {
       });
     }
 
-    // =========================================
-    // SLIDE 6 - DAILY REPORT
-    // =========================================
     const slide6 = pptx.addSlide();
 
     slide6.addText("Daily Upload Report", {
@@ -658,9 +558,6 @@ export default function ReportsPage() {
       );
     }
 
-    // =========================================
-    // SAVE PPT
-    // =========================================
     await pptx.writeFile({
       fileName: `crm_report_${period}_${new Date()
         .toISOString()
@@ -816,7 +713,6 @@ export default function ReportsPage() {
   // =========================================
   return (
     <div
-      ref={reportRef}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -872,15 +768,6 @@ export default function ReportsPage() {
               Excel
             </button>
           )}
-
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={
-              downloadFullReport
-            }
-          >
-            🖼️ PNG Report
-          </button>
 
           {canShare && (
             <button
@@ -973,7 +860,6 @@ export default function ReportsPage() {
       <div className="row">
         <div
           className="card col"
-          ref={chartRef1}
         >
           <div className="card-header">
             <div>
@@ -987,17 +873,6 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <button
-              className="btn-icon"
-              onClick={() =>
-                downloadImage(
-                  chartRef1,
-                  "upload_trend"
-                )
-              }
-            >
-              🖼️
-            </button>
           </div>
 
           <div
@@ -1015,24 +890,12 @@ export default function ReportsPage() {
           style={{
             width: 300,
           }}
-          ref={chartRef2}
         >
           <div className="card-header">
             <div className="card-title">
               Status Breakdown
             </div>
 
-            <button
-              className="btn-icon"
-              onClick={() =>
-                downloadImage(
-                  chartRef2,
-                  "status_breakdown"
-                )
-              }
-            >
-              🖼️
-            </button>
           </div>
 
           <div
