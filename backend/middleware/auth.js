@@ -19,13 +19,16 @@ exports.authorize = (...roles) => (req, res, next) => {
   next();
 };
 
+const ownerLikeRoles = ['org_owner','sub_business_owner'];
+const ownerLikeWithSuper = [...ownerLikeRoles, 'super_admin'];
+
 // Shortcuts — updated for new roles
 exports.isSuperAdmin = exports.authorize('super_admin');
-exports.isOrgOwner   = exports.authorize('org_owner','super_admin');
-exports.canManageOrg = exports.authorize('org_owner','ops_manager','super_admin');
-exports.canDownload  = exports.authorize('org_owner','ops_manager','super_admin');
-exports.canUpload    = exports.authorize('org_owner');
-exports.canWork      = exports.authorize('c1','c2','c3','ops_lead','ops_manager','org_owner','super_admin');
-exports.canViewDash  = exports.authorize('org_owner','ops_manager','ops_lead','super_admin');
+exports.isOrgOwner   = exports.authorize(...ownerLikeWithSuper);
+exports.canManageOrg = exports.authorize(...ownerLikeRoles, 'ops_manager', 'super_admin');
+exports.canDownload  = exports.authorize(...ownerLikeRoles, 'ops_manager', 'super_admin');
+exports.canUpload    = exports.authorize(...ownerLikeRoles);
+exports.canWork      = exports.authorize('c1','c2','c3','ops_lead','ops_manager', ...ownerLikeRoles, 'super_admin');
+exports.canViewDash  = exports.authorize(...ownerLikeRoles, 'ops_manager', 'ops_lead', 'super_admin');
 // ops_manager can assign roles to agents
-exports.canAssignRoles = exports.authorize('org_owner','ops_manager','super_admin');
+exports.canAssignRoles = exports.authorize(...ownerLikeRoles, 'ops_manager', 'super_admin');

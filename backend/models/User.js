@@ -2,11 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 
 // ROLES:
-// super_admin  → system-wide, no org
-// org_owner    → owns org, full access
-// ops_manager  → view + download + share + assign roles to agents
-// ops_lead     → view dashboard, NO download
-// c1 / c2 / c3 → calling agents, NO dashboard
+// super_admin         → system-wide, no org
+// org_owner           → owns org, full access
+// sub_business_owner  → owner-like access without ownership transfer/delete capabilities
+// ops_manager         → view + download + share + assign roles to agents
+// ops_lead            → view dashboard, NO download
+// c1 / c2 / c3        → calling agents, NO dashboard
 // (sub_admin kept for backward compat = ops_manager equivalent)
 
 // SUBSCRIPTION:
@@ -21,7 +22,7 @@ const userSchema = new mongoose.Schema({
   phone:        { type: String, default: '' },
   role: {
     type: String,
-    enum: ['super_admin','org_owner','ops_manager','ops_lead','c1','c2','c3','user'],
+    enum: ['super_admin','org_owner','sub_business_owner','ops_manager','ops_lead','c1','c2','c3','user'],
     default: 'c1'
   },
   organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', default: null },

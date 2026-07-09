@@ -76,22 +76,22 @@ exports.updateLead = async (req, res) => {
     const { c1, c2, c3, c2Enabled, c3Enabled, followUpDate, product, service, customData } = req.body;
 
     // ── Call updates (role-gated) ──
-    if (c1 !== undefined && ['c1','ops_lead','ops_manager','org_owner','super_admin'].includes(role)) {
+    if (c1 !== undefined && ['c1','ops_lead','ops_manager','org_owner','sub_business_owner','super_admin'].includes(role)) {
       lead.c1 = { ...(lead.c1?.toObject?.() ?? {}), ...c1, doneBy: req.user._id };
     }
-    if (c2 !== undefined && lead.c2Enabled && ['c2','ops_lead','ops_manager','org_owner','super_admin'].includes(role)) {
+    if (c2 !== undefined && lead.c2Enabled && ['c2','ops_lead','ops_manager','org_owner','sub_business_owner','super_admin'].includes(role)) {
       lead.c2 = { ...(lead.c2?.toObject?.() ?? {}), ...c2, doneBy: req.user._id };
     }
-    if (c3 !== undefined && lead.c3Enabled && ['c3','ops_lead','ops_manager','org_owner','super_admin'].includes(role)) {
+    if (c3 !== undefined && lead.c3Enabled && ['c3','ops_lead','ops_manager','org_owner','sub_business_owner','super_admin'].includes(role)) {
       lead.c3 = { ...(lead.c3?.toObject?.() ?? {}), ...c3, doneBy: req.user._id };
     }
 
-    // ── Enable C2/C3 — org_owner or ops_manager ──
-    if (c2Enabled !== undefined && ['ops_manager','org_owner','super_admin'].includes(role)) lead.c2Enabled = c2Enabled;
-    if (c3Enabled !== undefined && ['ops_manager','org_owner','super_admin'].includes(role)) lead.c3Enabled = c3Enabled;
+    // ── Enable C2/C3 — owner-like roles or ops_manager ──
+    if (c2Enabled !== undefined && ['ops_manager','org_owner','sub_business_owner','super_admin'].includes(role)) lead.c2Enabled = c2Enabled;
+    if (c3Enabled !== undefined && ['ops_manager','org_owner','sub_business_owner','super_admin'].includes(role)) lead.c3Enabled = c3Enabled;
 
-    // ── Follow-up date — org_owner only ──
-    if (followUpDate !== undefined && ['org_owner','super_admin'].includes(role)) {
+    // ── Follow-up date — owner-like roles only ──
+    if (followUpDate !== undefined && ['org_owner','sub_business_owner','super_admin'].includes(role)) {
       lead.followUpDate  = followUpDate || null;
       lead.followUpSetBy = req.user._id;
     }

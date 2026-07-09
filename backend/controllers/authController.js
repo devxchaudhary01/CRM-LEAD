@@ -35,19 +35,19 @@ exports.register = async (req, res) => {
     // Path 3: Authenticated user adding team member
     if (!req.user) return res.status(401).json({ success:false, message:'Not authorized' });
 
-    // ops_manager can add c1/c2/c3; org_owner can add all
+    // owner-like roles can add agents and manager-level users; sub_business_owner gets same access as org_owner
     const agentRoles  = ['c1','c2','c3'];
     const managerRoles= ['ops_lead','ops_manager'];
-    const allowed     = req.user.role === 'org_owner'
-      ? [...agentRoles, ...managerRoles, 'ops_manager']
+    const allowed     = ['org_owner','super_admin'].includes(req.user.role)
+      ? [...agentRoles, ...managerRoles, 'sub_business_owner']
       : agentRoles; // ops_manager can only add agents
 
     const assignRole  = allowed.includes(role) ? role : 'c1';
     const orgId       = req.user.organization?._id;
     if (!orgId) return res.status(400).json({ success:false, message:'No organization found' });
 
-    if (assignRole === 'ops_manager' && !['org_owner','super_admin'].includes(req.user.role))
-      return res.status(403).json({ success:false, message:'Only org owner can add Ops Manager' });
+    if (['ops_manager','sub_business_owner'].includes(assignRole) && !['org_owner','super_admin'].includes(req.user.role))
+      return res.status(403).json({ success:false, message:'Only owner-level roles can add this role' });
 
     const user = await User.create({ name, email, password, phone, role:assignRole, organization:orgId, createdBy:req.user._id, authMethod:'email' });
     res.status(201).json({ success:true, user:safeUser(user) });
@@ -123,6 +123,28 @@ exports.updateUser = async (req, res) => {
     if (!target) return res.status(404).json({ success:false, message:'User not found' });
     if (req.user.role !== 'super_admin' && String(target.organization) !== String(req.user.organization._id))
       return res.status(403).json({ success:false, message:'Not in your organization' });
+    const protectedRoles = ['org_owner','super_admin'];
+    const canManageProtected = ['org_owner','super_admin'].includes(req.user.role);
+
+    if (req.user.role === 'org_owner') {
+      if (String(req.user._id) === String(target._id)) {
+        return res.status(403).json({ success:false, message:'Business Owner role cannot be changed' });
+      }
+      if (protectedRoles.includes(target.role)) {
+        return res.status(403).json({ success:false, message:'You cannot modify this account' });
+      }
+    }
+
+    if (protectedRoles.includes(target.role) && !canManageProtected) {
+      return res.status(403).json({ success:false, message:'You cannot modify this account' });
+    }
+
+    if (req.user.role === 'sub_business_owner') {
+      if (['org_owner','sub_business_owner'].includes(target.role)) {
+        return res.status(403).json({ success:false, message:'You cannot modify this account' });
+      }
+    }
+
     // ops_manager can only change agent roles (c1/c2/c3)
     if (req.user.role === 'ops_manager') {
       if (!['c1','c2','c3'].includes(req.body.role))

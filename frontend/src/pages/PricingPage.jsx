@@ -95,7 +95,7 @@ export default function PricingPage() {
   }
 
   const handleUpgrade = async (plan) => {
-    if (!isOrgOwner) return toast.error('Only the Business Owner can upgrade the plan')
+    if (!isOrgOwner) return toast.error('Only owner-level roles can upgrade the plan')
     if (plan === orgPlan) return toast.error(`You are already on the ${plan} plan`)
     if (plan === 'free')  return toast.error('To downgrade, contact support')
 

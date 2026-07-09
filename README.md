@@ -94,10 +94,10 @@ cd frontend && npm run dev   # → http://localhost:3000
 3. Role → **org_owner** automatically
 4. Gets their own isolated data space
 
-### Adding Team Members (by org_owner or sub_admin)
+### Adding Team Members (by org_owner, sub_business_owner, or sub_admin)
 1. Go to **Team** page in sidebar
 2. Click **Add Member**
-3. Assign role: C1 / C2 / Final / Sub Admin
+3. Assign role: C1 / C2 / Final / Ops Lead / Ops Manager / Sub Business Owner
 
 ---
 
@@ -105,12 +105,13 @@ cd frontend && npm run dev   # → http://localhost:3000
 
 | Role | Upload | Download | C1 | C2 | Final | Reports | Team |
 |------|:------:|:--------:|:--:|:--:|:-----:|:-------:|:----:|
-| super_admin  | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| org_owner    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| sub_admin    | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ➕ add C1/C2/Final |
-| c1           | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| c2           | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| final        | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| super_admin        | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| org_owner          | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| sub_business_owner | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| sub_admin          | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ➕ add C1/C2/Final |
+| c1                 | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| c2                 | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| final              | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 
 ---
 

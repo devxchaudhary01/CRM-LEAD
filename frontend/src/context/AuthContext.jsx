@@ -45,25 +45,26 @@ export function AuthProvider({ children }) {
 
   const role = user?.role || ''
   const isSuperAdmin  = role === 'super_admin'
-  const isOrgOwner    = role === 'org_owner'
+  const isBusinessOwner = role === 'org_owner'
+  const isOrgOwner    = ['org_owner','sub_business_owner'].includes(role) || isSuperAdmin
   const isOpsManager  = role === 'ops_manager'
   const isOpsLead     = role === 'ops_lead'
   const isAgent       = ['c1','c2','c3'].includes(role)
-  const canDownload   = ['org_owner','ops_manager','super_admin'].includes(role)
-  const canUpload     = role === 'org_owner'
-  const canManage     = ['org_owner','ops_manager','super_admin'].includes(role)
-  const canAssignRoles= ['org_owner','ops_manager','super_admin'].includes(role)
+  const canDownload   = ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
+  const canUpload     = ['org_owner','sub_business_owner'].includes(role)
+  const canManage     = ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
+  const canAssignRoles= ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
   const canViewDash   = !isAgent
-  const canViewReports= ['org_owner','ops_manager','super_admin'].includes(role)
-  const canShare      = ['org_owner','ops_manager','super_admin'].includes(role)
-  const canSetFollowUp= ['org_owner','super_admin'].includes(role)
+  const canViewReports= ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
+  const canShare      = ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
+  const canSetFollowUp= ['org_owner','sub_business_owner','super_admin'].includes(role)
   const orgName       = user?.organization?.name || ''
   const orgPlan       = user?.organization?.plan  || 'free'
 
   return (
     <Ctx.Provider value={{
       user, token, loading, login, register, resetPassword, logout, setTokenManually,
-      isSuperAdmin, isOrgOwner, isOpsManager, isOpsLead, isAgent,
+      isSuperAdmin, isBusinessOwner, isOrgOwner, isOpsManager, isOpsLead, isAgent,
       canDownload, canUpload, canManage, canAssignRoles,
       canViewDash, canViewReports, canShare, canSetFollowUp,
       orgName, orgPlan, role,

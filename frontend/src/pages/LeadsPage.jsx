@@ -421,10 +421,10 @@ export default function LeadsPage() {
   const fileRef = useRef()
 
   const role = user?.role || ''
-  const canEditC1Role = ['c1', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canEditC2Role = ['c2', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canEditC3Role = ['c3', 'ops_lead', 'ops_manager', 'org_owner', 'super_admin'].includes(role)
-  const canEnableOpt = ['ops_manager', 'org_owner', 'super_admin'].includes(role)
+  const canEditC1Role = ['c1', 'ops_lead', 'ops_manager', 'org_owner', 'sub_business_owner', 'super_admin'].includes(role)
+  const canEditC2Role = ['c2', 'ops_lead', 'ops_manager', 'org_owner', 'sub_business_owner', 'super_admin'].includes(role)
+  const canEditC3Role = ['c3', 'ops_lead', 'ops_manager', 'org_owner', 'sub_business_owner', 'super_admin'].includes(role)
+  const canEnableOpt = ['ops_manager', 'org_owner', 'sub_business_owner', 'super_admin'].includes(role)
   const canWork = canEditC1Role || canEditC2Role || canEditC3Role
 
 

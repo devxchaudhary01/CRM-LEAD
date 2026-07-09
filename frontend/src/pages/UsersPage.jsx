@@ -4,14 +4,15 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { RiAddLine, RiUserLine, RiShieldCheckLine, RiVipCrownLine } from 'react-icons/ri'
 
-const ROLES_ALL   = ['c1','c2','c3','ops_lead','ops_manager']
+const ROLES_ALL   = ['c1','c2','c3','ops_lead','ops_manager','sub_business_owner']
 const AGENT_ROLES = ['c1','c2','c3']
-const ROLE_LABEL  = { super_admin:'Super Admin', org_owner:'Business Owner', ops_manager:'Ops Manager', ops_lead:'Ops Lead', c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent' }
-const ROLE_BADGE  = { super_admin:'b-red', org_owner:'b-purple', ops_manager:'b-amber', ops_lead:'b-blue', c1:'b-navy', c2:'b-navy', c3:'b-navy' }
+const ROLE_LABEL  = { super_admin:'Super Admin', org_owner:'Business Owner', sub_business_owner:'Sub Business Owner', ops_manager:'Ops Manager', ops_lead:'Ops Lead', c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent' }
+const ROLE_BADGE  = { super_admin:'b-red', org_owner:'b-purple', sub_business_owner:'b-purple', ops_manager:'b-amber', ops_lead:'b-blue', c1:'b-navy', c2:'b-navy', c3:'b-navy' }
 const PLAN_COLOR  = { free:'#94A3B8', basic:'#3B6FFF', pro:'#F59E0B' }
 
 const PERMS = {
   org_owner:   ['Upload data','Download data','Full team management','All reports','Set follow-up dates','Manage subscription'],
+  sub_business_owner: ['Upload data','Download data','Full team management','All reports','Set follow-up dates','Manage subscription'],
   ops_manager: ['View dashboard','Download data','Share reports','Assign agent roles','Manage C1/C2/C3'],
   ops_lead:    ['View dashboard','Cannot download','View reports only'],
   c1:          ['C1 call only','No dashboard'],
@@ -20,7 +21,7 @@ const PERMS = {
 }
 
 export default function UsersPage() {
-  const { user, isOrgOwner, isOpsManager } = useAuth()
+  const { user, isOrgOwner, isBusinessOwner, isOpsManager, isSuperAdmin } = useAuth()
   const [users,   setUsers]   = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -34,6 +35,7 @@ export default function UsersPage() {
         isOrgOwner ? axios.get('/api/auth/org') : Promise.resolve(null),
       ])
       setUsers(ur.data.users)
+      console.log(ur.data.users)
       if (or) setOrg(or.data.org)
     } catch { toast.error('Failed to load') }
     finally { setLoading(false) }
@@ -54,8 +56,17 @@ export default function UsersPage() {
   }
 
   const roleCounts = ROLES_ALL.reduce((a,r) => ({ ...a, [r]: users.filter(u=>u.role===r).length }), {})
-  // ops_manager can only assign agent roles
-  const editableRoles = isOpsManager ? AGENT_ROLES : ROLES_ALL
+  const currentRole = user?.role || ''
+  const canManageTarget = (u) => {
+    if (!u) return false
+    if (u._id === user?._id) return false
+    if (isSuperAdmin) return u.role !== 'super_admin'
+    if (isBusinessOwner) return !['super_admin','org_owner'].includes(u.role)
+    if (currentRole === 'sub_business_owner') return !['org_owner','sub_business_owner'].includes(u.role)
+    if (isOpsManager) return ['c1','c2','c3'].includes(u.role)
+    return false
+  }
+  const editableRoles = isOpsManager ? AGENT_ROLES : (isSuperAdmin || isBusinessOwner ? ROLES_ALL : ROLES_ALL.filter(r => r !== 'sub_business_owner'))
 
   return (
     <>
@@ -65,6 +76,7 @@ export default function UsersPage() {
           { lbl:'Total Team', val:users.length,              cls:'si-blue'  },
           { lbl:'Ops Managers',val:roleCounts.ops_manager||0,cls:'si-amber' },
           { lbl:'Ops Leads',  val:roleCounts.ops_lead||0,   cls:'si-navy'  },
+          { lbl:'Sub Owners', val:roleCounts.sub_business_owner||0, cls:'si-purple' },
           { lbl:'Agents',     val:(roleCounts.c1||0)+(roleCounts.c2||0)+(roleCounts.c3||0), cls:'si-green' },
         ].map(s => (
           <div key={s.lbl} className="card">
@@ -109,7 +121,7 @@ export default function UsersPage() {
                     <td className="muted fs11">{u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td><span className={`badge ${u.isActive?'b-green':'b-red'}`}>{u.isActive?'Active':'Inactive'}</span></td>
                     <td>
-                      {!['super_admin','org_owner'].includes(u.role) && (
+                      {canManageTarget(u) && (
                         <div style={{ display:'flex', gap:6, alignItems:'center' }}>
                           <select value={u.role} onChange={e => changeRole(u, e.target.value)}
                             style={{ padding:'4px 8px', border:'1.5px solid var(--border)', borderRadius:6, fontSize:11, fontFamily:'Outfit,sans-serif', cursor:'pointer', background:'var(--surface)' }}>
@@ -151,17 +163,18 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {showAdd && <AddModal onClose={() => setShowAdd(false)} onSaved={fetchUsers} isOrgOwner={isOrgOwner}/>}
+      {showAdd && <AddModal onClose={() => setShowAdd(false)} onSaved={fetchUsers} isBusinessOwner={isBusinessOwner} isSuperAdmin={isSuperAdmin} />}
     </>
   )
 }
 
-function AddModal({ onClose, onSaved, isOrgOwner }) {
+function AddModal({ onClose, onSaved, isBusinessOwner, isSuperAdmin }) {
   const [f, setF] = useState({ name:'', email:'', password:'', phone:'', role:'c1' })
   const [loading, setLoading] = useState(false)
   const set = k => e => setF(p => ({ ...p, [k]:e.target.value }))
-  const availableRoles = isOrgOwner ? ['c1','c2','c3','ops_lead','ops_manager'] : ['c1','c2','c3']
-  const ROLE_LABEL = { ops_manager:'Ops Manager', ops_lead:'Ops Lead', c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent' }
+  const canAssignOwnerLike = isBusinessOwner || isSuperAdmin
+  const availableRoles = canAssignOwnerLike ? ['c1','c2','c3','ops_lead','ops_manager','sub_business_owner'] : ['c1','c2','c3']
+  const ROLE_LABEL = { sub_business_owner:'Sub Business Owner', ops_manager:'Ops Manager', ops_lead:'Ops Lead', c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent' }
 
   const submit = async e => {
     e.preventDefault()
@@ -195,7 +208,8 @@ function AddModal({ onClose, onSaved, isOrgOwner }) {
           <div className="auth-info" style={{ marginBottom:10, fontSize:11 }}>
             <strong>C1/C2/C3:</strong> Calling agents — no dashboard access<br/>
             <strong>Ops Lead:</strong> View dashboard, cannot download<br/>
-            <strong>Ops Manager:</strong> Download + assign agent roles
+            <strong>Ops Manager:</strong> Download + assign agent roles<br/>
+            <strong>Sub Business Owner:</strong> Full owner-like access for the organization
           </div>
           <div className="modal-foot">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
