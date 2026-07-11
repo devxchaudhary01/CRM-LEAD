@@ -530,7 +530,18 @@ export default function LeadsPage() {
     setUploading(true)
     try {
       const { data } = await axios.post('/api/leads/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      toast.success(`${data.count} leads imported!`); setShowUpload(false); fetchLeads()
+      if (data.ignored > 0) {
+  toast.error(data.message, {
+    duration: 5000,
+  });
+} else {
+  toast.success(data.message);
+}
+
+setShowUpload(false);
+fetchLeads();
+       setShowUpload(false); 
+       fetchLeads()
     } catch (e) { toast.error(e.response?.data?.message || 'Upload failed') }
     finally { setUploading(false) }
   }

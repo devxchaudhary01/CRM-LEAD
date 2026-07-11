@@ -3,6 +3,8 @@ const Organization = require('../models/Organization');
 const Activity     = require('../models/Activity');
 const XLSX         = require('xlsx');
 const fs           = require('fs');
+const PLAN_LIMITS  = require('../config/planLimits')
+
 
 // ── GET /api/leads ──────────────────────────────────────────────
 exports.getLeads = async (req, res) => {
@@ -51,6 +53,24 @@ exports.getLeads = async (req, res) => {
 exports.createLead = async (req, res) => {
   try {
     const org = req.user.organization;
+    // Check lead limit based on plan
+const organization = await Organization.findById(org._id);
+
+const plan = organization?.plan || "free";
+const planLimit = PLAN_LIMITS[plan]?.maxLeads ?? 50;
+
+if (planLimit !== Infinity) {
+  const currentLeadCount = await Lead.countDocuments({
+    organization: org._id,
+  });
+
+  if (currentLeadCount >= planLimit) {
+    return res.status(403).json({
+      success: false,
+      message: `Free Plan allows only ${planLimit} leads. Please upgrade your plan to add more leads.`,
+    });
+  }
+}
     const { name,address,emailId,contactNo,product,service,customData } = req.body;
     const lead = await Lead.create({
       name, address, emailId, contactNo, product, service,
@@ -158,14 +178,46 @@ exports.uploadLeads = async (req, res) => {
       };
     }).filter(l => l.name);
 
-    const inserted = await Lead.insertMany(leads);
+// Get organization plan
+const organization = await Organization.findById(org._id);
+
+const plan = organization?.plan || "free";
+const planLimit = PLAN_LIMITS[plan]?.maxLeads ?? 50;
+
+// Pro plan has unlimited leads
+let leadsToInsert = leads;
+let ignored = 0;
+
+if (planLimit !== Infinity) {
+  // Current lead count of this organization
+  const currentLeadCount = await Lead.countDocuments({
+    organization: org._id,
+  });
+
+  const remaining = Math.max(planLimit - currentLeadCount, 0);
+
+  leadsToInsert = leads.slice(0, remaining);
+  ignored = leads.length - leadsToInsert.length;
+}
+
+
+    const inserted = await Lead.insertMany(leadsToInsert);
 
     await Activity.create({
       user: req.user._id, organization: org._id, action: 'upload',
-      description: `Uploaded ${inserted.length} leads`, meta: { count: inserted.length },
+      description: `Uploaded ${inserted.length}  leads`, meta: { count: inserted.length },
     });
 
-    res.json({ success:true, count: inserted.length });
+    res.json({
+  success: true,
+  imported: inserted.length,
+  ignored,
+  totalUploaded: leads.length,
+  message:
+    ignored > 0
+      ? `Free Plan allows only ${planLimit} leads. ${ignored} leads were skipped.`
+      : "Leads uploaded successfully.",
+});
   } catch(e) { res.status(500).json({ success:false, message:e.message }); }
 };
 
