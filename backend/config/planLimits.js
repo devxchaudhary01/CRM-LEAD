@@ -1,10 +1,9 @@
 const PLAN_LIMITS = {
-  free: {
+  trial: {
     maxLeads: 50,
   },
-
-  basic: {
-    maxLeads: 5000,
+  free: {
+    maxLeads: 50,
   },
 
   pro: {

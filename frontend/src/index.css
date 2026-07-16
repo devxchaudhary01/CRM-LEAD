@@ -809,7 +809,7 @@ tbody tr:hover td {
   justify-content: center;
   background: var(--navy);
   position: relative;
-  overflow: hidden;
+  overflow: scroll;
 }
 
 .auth-glow {
@@ -843,6 +843,7 @@ tbody tr:hover td {
   border-radius: 20px;
   width: 100%;
   max-width: 460px;
+  
   padding: 40px;
   box-shadow: var(--shadow-lg);
   position: relative;

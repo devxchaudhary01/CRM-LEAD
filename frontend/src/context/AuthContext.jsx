@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
   const canShare      = ['org_owner','sub_business_owner','ops_manager','super_admin'].includes(role)
   const canSetFollowUp= ['org_owner','sub_business_owner','super_admin'].includes(role)
   const orgName       = user?.organization?.name || ''
-  const orgPlan       = user?.organization?.plan  || 'free'
+  const orgPlan       = user?.organization?.plan === 'free' ? 'trial' : (user?.organization?.plan || 'trial')
 
   return (
     <Ctx.Provider value={{

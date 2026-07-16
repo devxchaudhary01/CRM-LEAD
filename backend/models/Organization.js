@@ -6,7 +6,7 @@ const orgSchema = new mongoose.Schema({
   owner: { type:mongoose.Schema.Types.ObjectId, ref:'User' },
   isActive: { type:Boolean, default:true },
 
-  plan:          { type:String, enum:['free','basic','pro'], default:'free' },
+  plan:          { type:String, enum:['trial','free','pro'], default:'trial' },
   planValidTill: { type:Date, default:null },
 
   followUpConfig: {

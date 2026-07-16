@@ -11,23 +11,24 @@ const getRazorpay = () => new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+const normalizePlan = (plan) => (plan === 'free' ? 'trial' : (plan || 'trial'));
+
 const PLAN_PRICES = {
-  basic: Number(process.env.PRICE_BASIC) || 99900,   // ₹999 in paise
-  pro:   Number(process.env.PRICE_PRO)   || 299900,  // ₹2999 in paise
+  pro: Number(process.env.PRICE_PRO) || 299900,  // ₹2999 in paise
 };
 
-const PLAN_NAMES = { basic:'Basic Plan', pro:'Pro Plan' };
+const PLAN_NAMES = { pro:'Pro Plan' };
 
 /**
  * POST /api/payment/create-order
- * Body: { plan: 'basic' | 'pro' }
+ * Body: { plan: 'pro' }
  * Creates a Razorpay order and returns order details to frontend
  */
 exports.createOrder = async (req, res) => {
   try {
     const { plan } = req.body;
-    if (!['basic','pro'].includes(plan))
-      return res.status(400).json({ success:false, message:'Invalid plan. Choose basic or pro.' });
+    if (plan !== 'pro')
+      return res.status(400).json({ success:false, message:'Invalid plan. Choose pro.' });
 
     const amount = PLAN_PRICES[plan];
     const razorpay = getRazorpay();
@@ -175,8 +176,8 @@ exports.webhook = async (req, res) => {
       const orderId = req.body.payload?.refund?.entity?.payment_id;
       const payment = await Payment.findOne({ razorpayPaymentId: orderId });
       if (payment) {
-        await Organization.findByIdAndUpdate(payment.organization, { plan:'free' });
-        console.log('Webhook: refund — org downgraded to free');
+        await Organization.findByIdAndUpdate(payment.organization, { plan:'trial' });
+        console.log('Webhook: refund — org downgraded to trial');
       }
     }
 
@@ -211,12 +212,14 @@ exports.getPlanStatus = async (req, res) => {
     const till = org.planValidTill;
     const daysLeft = till ? Math.max(0, Math.ceil((till-now)/86400000)) : 0;
 
+    const plan = normalizePlan(org.plan);
+
     res.json({
       success:   true,
-      plan:      org.plan,
+      plan,
       validTill: till,
       daysLeft,
-      isActive:  till ? till > now : org.plan === 'free',
+      isActive:  till ? till > now : plan === 'trial',
     });
   } catch(e) { res.status(500).json({ success:false, message:e.message }); }
 };

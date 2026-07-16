@@ -5,15 +5,14 @@ import toast from 'react-hot-toast'
 import { RiArrowRightLine, RiVipCrownLine } from 'react-icons/ri'
 
 const PLANS = [
-  { k:'free',  lbl:'Free',  desc:'Up to 100 leads', color:'#94A3B8', features:['Basic lead management','Email login'] },
-  { k:'basic', lbl:'Basic', desc:'Up to 5,000 leads',color:'#3B6FFF', features:['All Free features','Data analysis','Reports'] },
-  { k:'pro',   lbl:'Pro',   desc:'Unlimited leads', color:'#F59E0B', features:['All Basic features','PPT export','Priority support','Google & OTP login'] },
+  { k:'trial',  lbl:'Trial pack',  desc:'Up to 100 leads', color:'#94A3B8', features:['Basic lead management','Email login'] },
+  { k:'pro',   lbl:'Pro',   desc:'Unlimited leads', color:'#F59E0B', features:['All Trial pack features','PPT export','Priority support','Google & OTP login'] },
 ]
 
 export default function RegisterPage() {
   const { register } = useAuth()
   const nav = useNavigate()
-  const [f, setF] = useState({ name:'', email:'', password:'', phone:'', orgName:'', plan:'free' })
+  const [f, setF] = useState({ name:'', email:'', password:'', phone:'', orgName:'', plan:'trial' })
   const [loading, setLoading] = useState(false)
   const set = k => e => setF(p => ({...p, [k]:e.target.value}))
 
@@ -34,7 +33,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-glow"/>
-      <div className="auth-card" style={{ maxWidth:520 }}>
+      <div className="auth-card " style={{ maxWidth:520 ,marginTop:150}}>
         <div className="auth-brand">
           <div className="auth-mark">CR</div>
           <div><h1 style={{ fontSize:20, fontWeight:900 }}>CRM Pro</h1><span style={{ fontSize:11, color:'var(--muted)' }}>Register your organization</span></div>
@@ -56,12 +55,12 @@ export default function RegisterPage() {
           {/* Plan selection */}
           <div className="form-group">
             <label><RiVipCrownLine style={{ marginRight:5 }}/>Choose Your Plan</label>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginTop:4 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr ', gap:8, marginTop:4 }}>
               {PLANS.map(p => (
                 <div key={p.k} onClick={() => setF(prev => ({...prev, plan:p.k}))} style={{
                   padding:'10px 8px', borderRadius:9, cursor:'pointer', textAlign:'center',
                   border:`2px solid ${f.plan===p.k ? p.color : 'var(--border)'}`,
-                  background: f.plan===p.k ? (p.k==='pro'?'#FEF3C7':p.k==='basic'?'#EBF0FF':'#F1F5F9') : 'var(--surface)',
+                  background: f.plan===p.k ? (p.k==='pro'?'#FEF3C7':'#F1F5F9') : 'var(--surface)',
                   transition:'all .15s',
                 }}>
                   <div style={{ fontWeight:800, fontSize:13, color:p.color }}>{p.lbl}</div>

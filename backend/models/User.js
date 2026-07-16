@@ -12,7 +12,7 @@ const bcrypt   = require('bcryptjs');
 
 // SUBSCRIPTION:
 // free    → limited leads, basic features
-// basic   → lead management + data analysis
+
 // pro     → all features
 
 const userSchema = new mongoose.Schema({

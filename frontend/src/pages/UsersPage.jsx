@@ -8,7 +8,7 @@ const ROLES_ALL   = ['c1','c2','c3','ops_lead','ops_manager','sub_business_owner
 const AGENT_ROLES = ['c1','c2','c3']
 const ROLE_LABEL  = { super_admin:'Super Admin', org_owner:'Business Owner', sub_business_owner:'Sub Business Owner', ops_manager:'Ops Manager', ops_lead:'Ops Lead', c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent' }
 const ROLE_BADGE  = { super_admin:'b-red', org_owner:'b-purple', sub_business_owner:'b-purple', ops_manager:'b-amber', ops_lead:'b-blue', c1:'b-navy', c2:'b-navy', c3:'b-navy' }
-const PLAN_COLOR  = { free:'#94A3B8', basic:'#3B6FFF', pro:'#F59E0B' }
+const PLAN_COLOR  = { free:'#94A3B8', pro:'#F59E0B' }
 
 const PERMS = {
   org_owner:   ['Upload data','Download data','Full team management','All reports','Set follow-up dates','Manage subscription'],

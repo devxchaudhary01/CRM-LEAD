@@ -9,11 +9,14 @@ const ROLE_LABEL = {
   ops_manager:'Ops Manager', ops_lead:'Ops Lead',
   c1:'C1 Agent', c2:'C2 Agent', c3:'C3 Agent'
 }
-const PLAN_COLOR = { free:'#94A3B8', basic:'#3B6FFF', pro:'#F59E0B' }
+const PLAN_COLOR = { trial:'#94A3B8', free:'#94A3B8', pro:'#F59E0B' }
+const PLAN_LABELS = { trial:'Trial pack', free:'Trial pack', pro:'Pro' }
 
 export default function Layout({ children, title }) {
   const { user, logout, canViewDash, canManage, canViewReports, isOrgOwner, orgName, orgPlan, role } = useAuth()
   const nav = useNavigate()
+  const planKey = orgPlan === 'free' ? 'trial' : orgPlan
+  const planLabel = PLAN_LABELS[planKey] || 'Trial pack'
   const doLogout = () => { logout(); toast.success('Signed out'); nav('/login') }
 
   return (
@@ -28,8 +31,8 @@ export default function Layout({ children, title }) {
           <div className="sb-org">
             <strong>🏢 {orgName}</strong>
             <span style={{display:'inline-flex',alignItems:'center',gap:4,marginTop:3}}>
-              <RiVipCrownLine size={10} style={{color:PLAN_COLOR[orgPlan]}}/>
-              <span style={{fontSize:10,color:PLAN_COLOR[orgPlan],fontWeight:700,textTransform:'uppercase'}}>{orgPlan}</span>
+              <RiVipCrownLine size={10} style={{color:PLAN_COLOR[planKey]}}/>
+              <span style={{fontSize:10,color:PLAN_COLOR[planKey],fontWeight:700,textTransform:'uppercase'}}>{planLabel.toUpperCase()}</span>
             </span>
           </div>
         )}
@@ -77,7 +80,7 @@ export default function Layout({ children, title }) {
                 <div>
                   <div style={{fontSize:12,fontWeight:800,color:'#fff'}}>Upgrade Plan</div>
                   <div style={{fontSize:10,color:'rgba(255,255,255,.75)'}}>
-                    {orgPlan==='free'?'Unlock all features':'Go unlimited with Pro'}
+                    {planKey==='trial'?'Unlock all features':'Go unlimited with Pro'}
                   </div>
                 </div>
               </div>
@@ -105,14 +108,14 @@ export default function Layout({ children, title }) {
             <span className="badge b-blue">{ROLE_LABEL[role]}</span>
             {orgName && <span className="badge b-gray">🏢 {orgName}</span>}
             <span className="badge" style={{
-              background:orgPlan==='pro'?'#FEF3C7':orgPlan==='basic'?'#EBF0FF':'#F1F5F9',
-              color:PLAN_COLOR[orgPlan], fontWeight:700,
+              background:planKey==='pro'?'#FEF3C7':'#F1F5F9',
+              color:PLAN_COLOR[planKey], fontWeight:700,
             }}>
-              ⭐ {orgPlan.toUpperCase()}
+              ⭐ {planLabel.toUpperCase()}
             </span>
             {isOrgOwner && (
               <button className="btn btn-amber btn-sm" onClick={()=>nav('/pricing')} style={{fontSize:12}}>
-                <RiVipCrownLine/> {orgPlan==='free'?'Upgrade':'Manage Plan'}
+                <RiVipCrownLine/> {planKey==='trial'?'Upgrade':'Manage Plan'}
               </button>
             )}
           </div>

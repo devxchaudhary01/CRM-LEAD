@@ -8,8 +8,8 @@ import { RiCheckLine, RiCloseLine, RiVipCrownLine, RiArrowLeftLine } from 'react
 
 const PLANS = [
   {
-    key:     'free',
-    name:    'Free',
+    key:     'trial',
+    name:    'Trial pack',
     price:   0,
     period:  '',
     color:   '#64748B',
@@ -25,27 +25,6 @@ const PLANS = [
       { label:'PPT export',                 ok:false },
       { label:'Google login',               ok:false },
       { label:'Excel/Sheets import',        ok:false },
-      { label:'Priority support',           ok:false },
-    ],
-  },
-  {
-    key:     'basic',
-    name:    'Basic',
-    price:   999,
-    period:  '/month',
-    color:   '#3B6FFF',
-    bg:      '#EBF0FF',
-    border:  '#3B6FFF',
-    leads:   '5,000',
-    popular: true,
-    features: [
-      { label:'5,000 leads max',            ok:true  },
-      { label:'Basic lead management',      ok:true  },
-      { label:'C1/C2/C3 call tracking',     ok:true  },
-      { label:'Email + Google login',       ok:true  },
-      { label:'Data analysis & reports',    ok:true  },
-      { label:'Excel/Sheets import',        ok:true  },
-      { label:'PPT export',                 ok:false },
       { label:'Priority support',           ok:false },
     ],
   },
@@ -74,6 +53,7 @@ const PLANS = [
 export default function PricingPage() {
   const { user, orgPlan, isOrgOwner } = useAuth()
   const nav = useNavigate()
+  const normalizedOrgPlan = orgPlan === 'free' ? 'trial' : orgPlan
   const [loading, setLoading]   = useState(null) // which plan is loading
   const [planStatus, setPlanStatus] = useState(null)
   const [history, setHistory]   = useState([])
@@ -96,8 +76,8 @@ export default function PricingPage() {
 
   const handleUpgrade = async (plan) => {
     if (!isOrgOwner) return toast.error('Only owner-level roles can upgrade the plan')
-    if (plan === orgPlan) return toast.error(`You are already on the ${plan} plan`)
-    if (plan === 'free')  return toast.error('To downgrade, contact support')
+    if (plan === normalizedOrgPlan) return toast.error(`You are already on the ${plan} plan`)
+    if (plan === 'trial')  return toast.error('To downgrade, contact support')
 
     setLoading(plan)
     try {
@@ -191,8 +171,8 @@ export default function PricingPage() {
           <div style={{ marginTop:14, display:'inline-flex', alignItems:'center', gap:8,
             background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.12)',
             borderRadius:99, padding:'6px 16px', fontSize:13, color:'rgba(255,255,255,.8)' }}>
-            Current: <strong style={{ color:'#F59E0B', textTransform:'uppercase' }}>{orgPlan}</strong>
-            {planStatus.validTill && planStatus.plan !== 'free' && (
+            Current: <strong style={{ color:'#F59E0B', textTransform:'uppercase' }}>{normalizedOrgPlan === 'trial' ? 'TRIAL PACK' : normalizedOrgPlan.toUpperCase()}</strong>
+            {planStatus.validTill && planStatus.plan !== 'trial' && planStatus.plan !== 'free' && (
               <span style={{ color:'rgba(255,255,255,.5)', fontSize:12 }}>
                 · {planStatus.daysLeft} days left
               </span>
@@ -202,11 +182,11 @@ export default function PricingPage() {
       </div>
 
       {/* Plan cards */}
-      <div style={{ maxWidth:960, margin:'32px auto', padding:'0 24px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:20 }}>
+      <div style={{ maxWidth:960, margin:'32px auto', padding:'0 24px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
         {PLANS.map(plan => {
-          const isCurrent  = orgPlan === plan.key
+          const isCurrent  = normalizedOrgPlan === plan.key
           const isLoading  = loading === plan.key
-          const isUpgrade  = plan.key !== 'free' && plan.key !== orgPlan
+          const isUpgrade  = plan.key !== 'trial' && plan.key !== normalizedOrgPlan
 
           return (
             <div key={plan.key} style={{
@@ -242,7 +222,7 @@ export default function PricingPage() {
                 </div>
                 <div style={{ display:'flex', alignItems:'baseline', gap:4 }}>
                   <span style={{ fontSize:36, fontWeight:900, fontFamily:'Outfit,sans-serif', color:'var(--text)' }}>
-                    {plan.price === 0 ? 'Free' : `₹${plan.price.toLocaleString()}`}
+                    {plan.price === 0 ? 'Trial pack' : `₹${plan.price.toLocaleString()}`}
                   </span>
                   {plan.period && <span style={{ fontSize:13, color:'var(--muted)' }}>{plan.period}</span>}
                 </div>
@@ -266,9 +246,9 @@ export default function PricingPage() {
               </div>
 
               {/* CTA button */}
-              {plan.key === 'free' ? (
+              {plan.key === 'trial' ? (
                 <button className="btn btn-ghost" style={{ width:'100%', cursor:'default' }} disabled>
-                  {isCurrent ? 'Your current plan' : 'Free forever'}
+                  {isCurrent ? 'Your current plan' : 'Trial pack'}
                 </button>
               ) : (
                 <button

@@ -5,6 +5,7 @@ const XLSX         = require('xlsx');
 const fs           = require('fs');
 const PLAN_LIMITS  = require('../config/planLimits')
 
+const normalizePlan = (plan) => (plan === 'free' ? 'trial' : (plan || 'trial'));
 
 // ── GET /api/leads ──────────────────────────────────────────────
 exports.getLeads = async (req, res) => {
@@ -67,7 +68,7 @@ if (planLimit !== Infinity) {
   if (currentLeadCount >= planLimit) {
     return res.status(403).json({
       success: false,
-      message: `Free Plan allows only ${planLimit} leads. Please upgrade your plan to add more leads.`,
+      message: `Trial pack allows only ${planLimit} leads. Please upgrade your plan to add more leads.`,
     });
   }
 }
@@ -215,7 +216,7 @@ if (planLimit !== Infinity) {
   totalUploaded: leads.length,
   message:
     ignored > 0
-      ? `Free Plan allows only ${planLimit} leads. ${ignored} leads were skipped.`
+      ? `Trial pack allows only ${planLimit} leads. ${ignored} leads were skipped.`
       : "Leads uploaded successfully.",
 });
   } catch(e) { res.status(500).json({ success:false, message:e.message }); }

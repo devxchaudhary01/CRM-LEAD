@@ -11,7 +11,7 @@ const paymentSchema = new mongoose.Schema({
   razorpaySignature: { type: String, default:'' },
 
   // Plan purchased
-  plan:    { type: String, enum:['basic','pro'], required:true },
+  plan:    { type: String, enum:['trial','pro'], required:true },
   amount:  { type: Number, required:true },   // in paise
   currency:{ type: String, default:'INR' },
 
