@@ -61,8 +61,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: err.message });
 });
 
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 CRM API  →  http://localhost:${PORT}`);
-  console.log(`🔑 Google OAuth  →  http://localhost:${PORT}/api/auth/google`);
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 CRM API running on port ${PORT}`);
+  console.log(`🔑 Google OAuth → /api/auth/google`);
 });
+
