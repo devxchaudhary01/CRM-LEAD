@@ -68,7 +68,8 @@ export default function LoginPage() {
 
   // Google login — redirects to backend which redirects to Google
   const googleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google'
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://crm-lead-fpvd.onrender.com'
+    window.location.href = `${apiBaseUrl.replace(/\/$/, '')}/api/auth/google`
   }
 
   const sendOtp = () => {
